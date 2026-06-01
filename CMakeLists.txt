@@ -41,8 +41,9 @@ find_package(OpenGL REQUIRED)
 
 # other vendor stuff
 
-set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui)
-set(GLAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad)
+set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/")
+set(GLAD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/")
+set(DEBUGBREAK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/debugbreak/")
 
 file(GLOB IMGUI_SOURCES_BASE CONFIGURE_DEPENDS "${IMGUI_DIR}/*.cpp")
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
@@ -68,6 +69,8 @@ target_include_directories(${MAIN_EXEC_TARGET} PRIVATE
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
     ${IMGUI_DIR}/misc/cpp
+
+    ${DEBUGBREAK_DIR}
 )
 
 target_link_libraries(${MAIN_EXEC_TARGET} PRIVATE

@@ -2,3 +2,6 @@
 	path = vendor/imgui
 	url = https://github.com/ocornut/imgui
 	branch = docking
+[submodule "vendor/debugbreak"]
+	path = vendor/debugbreak
+	url = https://github.com/scottt/debugbreak.git
