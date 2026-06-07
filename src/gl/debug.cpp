@@ -100,9 +100,21 @@ constexpr std::string_view gl_debug_severity_str(GLenum severity) {
 } // namespace
 
 void GLAPIENTRY ogl_debug_msg_callback(GLenum src, GLenum type, GLuint id, GLenum severity,
-                                       GLsizei length, const GLchar* msg, const void* user_param) {
+                                       [[maybe_unused]] GLsizei length, const GLchar* msg,
+                                       const void* user_param) {
+    assert(user_param != nullptr &&
+           "opengl debug config was not provided when initializing the debug callback");
+    const auto* config = reinterpret_cast<const OpenGLDebugCallbackConfig*>(user_param);
+
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION && !config->show_notifications)
+        return;
+
     LoggerCategory log_level =
         severity != GL_DEBUG_SEVERITY_NOTIFICATION ? LoggerCategory::Error : LoggerCategory::Info;
+
+    // don't report src info for opengl errors (it'll just point to the log call below)
+    bool has_loc = Logger::instance().loc_filter.has(log_level);
+    Logger::instance().loc_filter.disable(log_level);
 
     Logger::instance().log(log_level, "OpenGL",
                            std::format("debug message received:\n"
@@ -113,6 +125,9 @@ void GLAPIENTRY ogl_debug_msg_callback(GLenum src, GLenum type, GLuint id, GLenu
                                        "Message:\n {}",
                                        gl_debug_severity_str(severity), gl_debug_src_str(src),
                                        gl_debug_type_str(type), id, msg));
+
+    if (has_loc)
+        Logger::instance().loc_filter.enable(log_level);
 
     if (is_debugger_present() && severity != GL_DEBUG_SEVERITY_NOTIFICATION)
         debug_break();

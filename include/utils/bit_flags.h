@@ -1,78 +1,86 @@
 #pragma once
 
+#include <concepts>
 #include <type_traits>
+#include <utility>
 
-template <typename T>
-requires std::is_enum_v<T>
+template <typename E>
+requires std::is_enum_v<E> && requires {
+    { E::None } -> std::same_as<E>;
+}
 struct BitFlags {
 private:
-    using IntT = std::underlying_type_t<T>;
+    using U = std::underlying_type_t<E>;
 
-    IntT bits{};
+    U bits_{};
 
 public:
-    constexpr explicit BitFlags() = default;
+    constexpr explicit BitFlags()
+        : BitFlags{E::None} {}
 
-    constexpr BitFlags(T initial_value)
-        : bits{static_cast<IntT>(initial_value)} {}
+    constexpr BitFlags(E initial_value)
+        : bits_{static_cast<U>(initial_value)} {}
 
-    template <typename... Args>
-    requires (std::same_as<BitFlags<T>, std::remove_cvref_t<Args>> && ...)
-    constexpr explicit BitFlags(Args&&... args)
-        : BitFlags{(args | ...)} {}
+    template <typename... BFArgs>
+    requires (sizeof...(BFArgs) > 1) &&
+             (std::same_as<BitFlags<E>, std::remove_cvref_t<BFArgs>> && ...)
+    constexpr BitFlags(BFArgs&&... args)
+        : BitFlags{(std::forward<BFArgs>(args) | ...)} {}
 
-    template <typename... Args>
-    requires (std::same_as<T, std::remove_cvref_t<Args>> && ...)
-    constexpr explicit BitFlags(Args&&... args)
-        : bits{(BitFlags<T>(args) | ...).get_bits()} {}
+    template <typename... EArgs>
+    requires (sizeof...(EArgs) > 0) && (std::same_as<E, std::remove_cvref_t<EArgs>> && ...)
+    constexpr BitFlags(EArgs&&... args)
+        : bits_{(BitFlags(std::forward<EArgs>(args)) | ...).get_bits()} {}
 
-    constexpr BitFlags<T> operator|(BitFlags<T> other) const { return this->bits | other.bits; }
-    constexpr BitFlags<T>& operator|=(BitFlags<T> other) {
-        bits |= other.bits;
+    constexpr BitFlags<E> operator|(BitFlags<E> other) const { return this->bits_ | other.bits_; }
+    constexpr BitFlags<E>& operator|=(BitFlags<E> other) {
+        bits_ |= other.bits_;
         return *this;
     }
 
-    constexpr BitFlags<T> operator|(T flag) const { return this->bits | static_cast<IntT>(flag); }
-    constexpr BitFlags<T>& operator|=(T flag) {
-        bits |= static_cast<IntT>(flag);
+    constexpr BitFlags<E> operator|(E flag) const { return this->bits_ | static_cast<U>(flag); }
+    constexpr BitFlags<E>& operator|=(E flag) {
+        bits_ |= static_cast<U>(flag);
         return *this;
     }
 
-    constexpr BitFlags<T> operator&(BitFlags<T> other) const { return this->bits & other.bits; }
-    constexpr BitFlags<T>& operator&=(BitFlags<T> other) {
-        bits &= other.bits;
+    constexpr BitFlags<E> operator&(BitFlags<E> other) const { return this->bits_ & other.bits_; }
+    constexpr BitFlags<E>& operator&=(BitFlags<E> other) {
+        bits_ &= other.bits_;
         return *this;
     }
 
-    constexpr BitFlags<T> operator&(T flag) const { return this->bits & static_cast<IntT>(flag); }
-    constexpr BitFlags<T>& operator&=(T flag) {
-        bits &= static_cast<IntT>(flag);
+    constexpr BitFlags<E> operator&(E flag) const { return this->bits_ & static_cast<U>(flag); }
+    constexpr BitFlags<E>& operator&=(E flag) {
+        bits_ &= static_cast<U>(flag);
         return *this;
     }
 
-    constexpr IntT get_bits() const { return bits; }
+    constexpr U get_bits() const { return bits_; }
 
-    constexpr void enable(T target) { bits |= static_cast<IntT>(target); }
+    constexpr bool empty() const { return bits_ == static_cast<U>(E::None); }
 
-    constexpr void disable(T target) { bits &= ~static_cast<IntT>(target); }
+    constexpr void enable(E target) { bits_ |= static_cast<U>(target); }
 
-    constexpr void toggle(T target) { bits ^= static_cast<IntT>(target); }
+    constexpr void disable(E target) { bits_ &= ~static_cast<U>(target); }
 
-    constexpr bool has(T target) const { return bits & static_cast<IntT>(target); }
+    constexpr void toggle(E target) { bits_ ^= static_cast<U>(target); }
 
-    template <typename... Args>
-    requires (std::same_as<T, std::remove_cvref_t<Args>> && ...)
-    constexpr bool has_any(Args&&... args) const {
-        return (has(args) || ...);
+    constexpr bool has(E target) const { return bits_ & static_cast<U>(target); }
+
+    template <typename... EArgs>
+    requires (sizeof...(EArgs) > 0) && (std::same_as<E, std::remove_cvref_t<EArgs>> && ...)
+    constexpr bool has_any(EArgs&&... args) const {
+        return (has(std::forward<EArgs>(args)) || ...);
     }
 
-    template <typename... Args>
-    requires (std::same_as<T, std::remove_cvref_t<Args>> && ...)
-    constexpr bool has_all(Args&&... args) const {
-        return (has(args) && ...);
+    template <typename... EArgs>
+    requires (sizeof...(EArgs) > 0) && (std::same_as<E, std::remove_cvref_t<EArgs>> && ...)
+    constexpr bool has_all(EArgs&&... args) const {
+        return (has(std::forward<EArgs>(args)) && ...);
     }
 
 private:
-    constexpr BitFlags(IntT initial_bits)
-        : bits{initial_bits} {}
+    constexpr BitFlags(U initial_bits)
+        : bits_{initial_bits} {}
 };

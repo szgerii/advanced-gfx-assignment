@@ -17,7 +17,7 @@ struct GlfwErrorInfo {
 };
 
 // source: https://www.glfw.org/docs/3.4/group__errors.html
-constexpr GlfwErrorInfo get_glfw_error_info(int code) {
+inline constexpr GlfwErrorInfo get_glfw_error_info(int code) {
     switch (code) {
         case GLFW_NO_ERROR:
             return {"NO_ERROR", "No error has occurred (NOTE: if you're seeing this in an "
@@ -86,24 +86,23 @@ class GlfwCtx {
     static void error_callback(int code, const char* description) {
         auto err_info = detail::get_glfw_error_info(code);
 
-        Logger::instance().error("GLFW",
-                                 std::format("An unexpected GLFW error occurred!\n"
-                                             "Error code: {} ({})\n"
-                                             "General description: {}\n"
-                                             "Specific description: {}",
-                                             err_info.name, code, err_info.general_description,
-                                             description ? description : "not provided by GLFW"));
+        Logger::error("GLFW", std::format("An unexpected GLFW error occurred!\n"
+                                          "Error code: {} ({})\n"
+                                          "General description: {}\n"
+                                          "Specific description: {}",
+                                          err_info.name, code, err_info.general_description,
+                                          description ? description : "not provided by GLFW"));
 
         // avoid referencing the current instance if error is reported during instance construction
         if constexpr (InstanceInitialized) {
             if (GlfwCtx::instance().errors_as_fatal)
-                GlfwCtx::instance()._terminate_next_frame = true;
+                GlfwCtx::instance().terminate_next_frame_ = true;
         }
     }
 
     // used for propagating errors to the main loop
     // throwing in error_callback would prevent proper logging of multiple, same-operation errors
-    bool _terminate_next_frame = false;
+    bool terminate_next_frame_ = false;
 
 public:
     // NOTE: errors_as_fatal is only respected on first call to instance()
@@ -117,7 +116,7 @@ public:
     // can be modified/toggled later to achieve error critical sections of code
     bool errors_as_fatal;
 
-    bool terminate_next_frame() const { return _terminate_next_frame; }
+    bool terminate_next_frame() const { return terminate_next_frame_; }
 
 private:
     explicit GlfwCtx(bool errors_as_fatal)

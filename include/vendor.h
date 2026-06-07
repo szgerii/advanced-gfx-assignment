@@ -10,4 +10,5 @@
 
 #ifdef __cplusplus // glm imports <cmath>, breaking C compilation
     #include <glm/glm.hpp>
+    #include <glm/gtc/type_ptr.hpp>
 #endif

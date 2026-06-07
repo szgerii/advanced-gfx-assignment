@@ -2,6 +2,10 @@
 
 #include "vendor.h"
 
+struct OpenGLDebugCallbackConfig {
+    bool show_notifications;
+};
+
 bool is_debugger_present();
 
 void GLAPIENTRY ogl_debug_msg_callback(GLenum src, GLenum type, GLuint id, GLenum severity,

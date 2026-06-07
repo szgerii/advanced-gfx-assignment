@@ -1,7 +1,31 @@
+#include "app/application.h"
 #include "app/window.h"
+#include "gl/buffer.h"
 #include "gl/debug.h"
+#include "gl/shader_program.h"
+#include "gl/vertex_array.h"
+#include "glfw_ctx.h"
 #include "logger.h"
-#include "wrapper/glfw_ctx.h"
+#include "render/render_queue.h"
+#include "vendor.h"
+
+#include <array>
+
+struct VertexCol {
+    glm::vec2 pos;
+    glm::vec3 color;
+};
+
+// clang-format off
+static constexpr std::array vertices{
+    VertexCol{{-0.5f,  0.5f}, {1.f, 0.f, 0.f}}, // top left
+    VertexCol{{ 0.5f,  0.5f}, {0.f, 1.f, 0.f}}, // top right
+    VertexCol{{ 0.5f, -0.5f}, {0.f, 0.f, 1.f}}, // bottom right
+    VertexCol{{-0.5f, -0.5f}, {1.f, 1.f, 1.f}}, // bottom left
+};
+// clang-format on
+
+static constexpr std::array<uint32_t, 6> indices{0, 3, 2, 2, 1, 0};
 
 int main() {
     // RAII singleton for automatic GLFW lifetime management and error logging
@@ -17,38 +41,24 @@ int main() {
 
     int version = gladLoadGL(glfwGetProcAddress);
     if (version == 0)
-        Logger::instance().critical_error("GLAD",
-                                          "failed to initialize GLAD for current OpenGL context");
-
-    GLenum gl_error = glGetError();
-    while (gl_error != GL_NO_ERROR) {
-        Logger::instance().info("Info", std::format("error code: {}", gl_error));
-
-        gl_error = glGetError();
-    }
+        Logger::critical_error("GLAD", "failed to initialize GLAD for current OpenGL context");
 
     GLint ctx_flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &ctx_flags);
     if (ctx_flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        static OpenGLDebugCallbackConfig debug_cb_config{.show_notifications = false};
+
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // for breakpoints
-        glDebugMessageCallback(ogl_debug_msg_callback, nullptr);
+        glDebugMessageCallback(ogl_debug_msg_callback, &debug_cb_config);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
 
     main_win.dump_ogl_info();
-    main_win.set_ogl_version_title();
+    // main_win.set_info_title();
 
-    glEnable(GL_INVALID_ENUM);
-
-    glClearColor(0.125f, 0.25f, 0.5f, 1.0f);
-    while (!main_win.should_close()) {
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        main_win.swap_buffers();
-
-        glfwPollEvents();
-    }
+    Application app{main_win};
+    app.run();
 
     return EXIT_SUCCESS;
 }

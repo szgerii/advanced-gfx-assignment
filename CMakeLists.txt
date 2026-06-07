@@ -25,6 +25,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glfw)
 
 # glm
+# source: https://github.com/g-truc/glm#cmake-using-fetchcontent
 
 set(GLM_BUILD_TESTS OFF)
 
@@ -48,20 +49,27 @@ set(DEBUGBREAK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/debugbreak/")
 file(GLOB IMGUI_SOURCES_BASE CONFIGURE_DEPENDS "${IMGUI_DIR}/*.cpp")
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
-add_executable(${MAIN_EXEC_TARGET}
-    ${PROJECT_SOURCES}
-
-    ${GLAD_DIR}/src/gl.c
-
+set(IMGUI_ALL_SOURCES
     ${IMGUI_SOURCES_BASE}
     ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
     ${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 )
 
+set_source_files_properties(${IMGUI_ALL_SOURCES} PROPERTIES COMPILE_OPTIONS "-w")
+
+add_executable(${MAIN_EXEC_TARGET}
+    ${PROJECT_SOURCES}
+
+    ${GLAD_DIR}/src/gl.c
+    ${IMGUI_ALL_SOURCES}
+)
+
 target_include_directories(${MAIN_EXEC_TARGET} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/
-    
+)
+
+target_include_directories(${MAIN_EXEC_TARGET} SYSTEM PRIVATE
     ${GLAD_DIR}/include
     ${GLAD_DIR}/include/glad
     ${GLAD_DIR}/include/KHR
@@ -70,11 +78,32 @@ target_include_directories(${MAIN_EXEC_TARGET} PRIVATE
     ${IMGUI_DIR}/backends
     ${IMGUI_DIR}/misc/cpp
 
+    ${glm_SOURCE_DIR} # manually marks glm includes as SYSTEM 
+
     ${DEBUGBREAK_DIR}
 )
+
+target_compile_options(${MAIN_EXEC_TARGET} PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wconversion
+    -Wsign-conversion
+    -Wsign-compare
+)
+
+set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/src/utils/obj_parser.cpp" PROPERTIES COMPILE_OPTIONS "-w")
 
 target_link_libraries(${MAIN_EXEC_TARGET} PRIVATE
     glfw
     OpenGL::GL
     glm::glm
+)
+
+# this may need to be configured further if app uses large asset files
+add_custom_command(
+    TARGET ${MAIN_EXEC_TARGET} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:${MAIN_EXEC_TARGET}>/assets"
 )
