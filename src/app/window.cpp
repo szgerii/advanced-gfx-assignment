@@ -2,14 +2,14 @@
 
 #include "app/application.h"
 #include "meta.h"
-#include "render/render_command.h"
+#include "render/ogl.h"
 #include "vendor.h"
 
 namespace {
 
 void framebuffer_size_callback_fallback([[maybe_unused]] GLFWwindow* window, int width,
                                         int height) {
-    RenderCommand::viewport(0, 0, width, height);
+    OGL::viewport(0, 0, width, height);
 }
 
 } // namespace

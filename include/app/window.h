@@ -10,7 +10,7 @@
 
 #include "glfw_ctx.h"
 #include "logger.h"
-#include "render/render_command.h"
+#include "render/ogl.h"
 #include "utils/callback.h"
 #include "utils/validate.h"
 #include "vendor.h"
@@ -138,7 +138,7 @@ public:
     void update_viewport() {
         int width, height;
         glfwGetWindowSize(window_, &width, &height);
-        RenderCommand::viewport(0, 0, width, height);
+        OGL::viewport(0, 0, width, height);
     }
 
     void set_cursor_pos_callback(CursorPosCallback cursor_pos_cb) {

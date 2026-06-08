@@ -1,6 +1,6 @@
 #include "app/application.h"
 
-#include "render/render_command.h"
+#include "render/ogl.h"
 #include "scenes/test_scene.h"
 #include "utils/obj_parser.h"
 
@@ -40,8 +40,8 @@ void Application::init() {
 
     window_.update_viewport();
 
-    // RenderCommand::set_clear_color(0.35f, 0.25f, 0.875f);
-    RenderCommand::set_clear_color(0.1f, 0.1f, 0.1f);
+    // OGL::set_clear_color(0.35f, 0.25f, 0.875f);
+    OGL::set_clear_color(0.1f, 0.1f, 0.1f);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -151,7 +151,7 @@ void Application::update(const UpdateInfo& update_info) {
 }
 
 void Application::render() {
-    RenderCommand::clear(true, true, false);
+    OGL::clear(true, true, false);
 
     if (active_pipeline_idx_ >= 0 && active_scene_idx_ >= 0)
         active_pipeline().run(active_scene());
@@ -197,7 +197,7 @@ void Application::handle_resize(int width, int height) {
     if (width <= 0 || height <= 0)
         return;
 
-    RenderCommand::viewport(0, 0, width, height);
+    OGL::viewport(0, 0, width, height);
 
     for (auto& scene : scenes_) {
         if (scene != nullptr)

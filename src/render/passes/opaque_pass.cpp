@@ -1,5 +1,5 @@
 #include "render/passes/opaque_pass.h"
-#include "render/render_command.h"
+#include "render/ogl.h"
 
 void OpaqueRenderPass::run(const RenderQueue& queue) {
     VALIDATE(*this);
@@ -28,6 +28,6 @@ void OpaqueRenderPass::run(const RenderQueue& queue) {
 
         cmd.mesh->vao.bind();
 
-        RenderCommand::draw_mesh(*cmd.mesh);
+        OGL::draw_mesh(*cmd.mesh);
     }
 }

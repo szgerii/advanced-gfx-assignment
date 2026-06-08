@@ -1,7 +1,7 @@
 #include "gui/panels/general_config.h"
 
 #include "app/application.h"
-#include "render/render_command.h"
+#include "render/ogl.h"
 #include "utils/num_cast.h"
 
 #include <string_view>
