@@ -5,3 +5,6 @@
 [submodule "vendor/debugbreak"]
 	path = vendor/debugbreak
 	url = https://github.com/scottt/debugbreak.git
+[submodule "vendor/stb"]
+	path = vendor/stb
+	url = https://github.com/nothings/stb
