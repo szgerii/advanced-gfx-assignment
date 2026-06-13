@@ -12,13 +12,13 @@
 template <GLenum BufferType>
 requires CIsBufferType<BufferType>
 class TypedBuffer {
-    GLuint id_   = 0;
-    size_t size_ = 0;
+    GLuint id_         = 0;
+    size_t size_bytes_ = 0;
 
 public:
     explicit TypedBuffer(size_t size, const void* data = nullptr,
                          GLbitfield flags = GL_DYNAMIC_STORAGE_BIT)
-        : size_{size} {
+        : size_bytes_{size} {
         glCreateBuffers(1, &id_);
         glNamedBufferStorage(id_, num_cast<GLsizeiptr>(size), data, flags);
     }
@@ -28,9 +28,9 @@ public:
     explicit TypedBuffer(const R& container, GLbitfield flags = GL_DYNAMIC_STORAGE_BIT) {
         auto span = std::span{container};
 
-        size_ = span.size_bytes();
+        size_bytes_ = span.size_bytes();
         glCreateBuffers(1, &id_);
-        glNamedBufferStorage(id_, num_cast<GLsizeiptr>(size_), span.data(), flags);
+        glNamedBufferStorage(id_, num_cast<GLsizeiptr>(size_bytes_), span.data(), flags);
     }
 
     ~TypedBuffer() {
@@ -42,7 +42,7 @@ public:
     TypedBuffer& operator=(const TypedBuffer&) = delete;
 
     TypedBuffer(TypedBuffer&& other) noexcept
-        : id_{other.id_}, size_{other.size_} {
+        : id_{other.id_}, size_bytes_{other.size_bytes_} {
         other.id_ = 0;
     }
 
@@ -53,8 +53,8 @@ public:
         if (id_ != 0)
             glDeleteBuffers(1, &id_);
 
-        id_   = other.id_;
-        size_ = other.size_;
+        id_         = other.id_;
+        size_bytes_ = other.size_bytes_;
 
         other.id_ = 0;
 
@@ -97,23 +97,37 @@ public:
     void unbind_base(GLuint idx) { glBindBufferBase(BufferType, idx, 0); }
 
     void* map(GLenum access) { return glMapNamedBuffer(id_, access); }
+
+    // NOTE:
+    // there's no bounds/size checking when T is invalid and cannot be mapped to the underlying
+    // buffer correctly
+    template <typename T>
+    std::span<T> map_as(GLenum access) {
+        void* ptr = map(access);
+        if (ptr == nullptr)
+            return {};
+
+        return std::span<T>(static_cast<T*>(ptr), size_bytes_ / sizeof(T));
+    }
+
     bool unmap() { return glUnmapNamedBuffer(id_) == GL_TRUE; }
 
     GLuint id() const { return id_; }
-    size_t size() const { return size_; }
+    size_t size_bytes() const { return size_bytes_; }
 
 private:
     void assert_no_buffer_overflow(size_t data_size, GLintptr offset, bool read) {
 #ifndef NDEBUG
-        if (static_cast<size_t>(offset) + data_size > size_) {
+        if (static_cast<size_t>(offset) + data_size > size_bytes_) {
             Logger::critical_error(
                 "Buffer",
                 std::format(
                     "trying to {} {} bytes {} buffer starting at offset {}, which "
                     "would overflow the buffer's storage (buffer is {} bytes). Note that this is "
-                    "a debug-only assertion, and will be silently forwarded to OpenGL in release "
-                    "builds.",
-                    read ? "access" : "upload", data_size, read ? "from" : "to", offset, size_));
+                    "a debug-only assertion, and the request will be silently forwarded to OpenGL "
+                    "in release builds.",
+                    read ? "access" : "upload", data_size, read ? "from" : "to", offset,
+                    size_bytes_));
         }
 #endif
     }

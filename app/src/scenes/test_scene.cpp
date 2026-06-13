@@ -12,13 +12,13 @@ void TestScene::update(const UpdateInfo& update_info) {
 }
 
 void TestScene::record_cmds(RenderQueue& queue) const {
-    queue.enqueue(DrawCommand{.mesh      = &skybox_cube_gpu_,
+    queue.enqueue(DrawCommand{.mesh      = &skybox_cube_mesh_.mesh_gpu(),
                               .interface = &skybox_iface_,
                               .world     = glm::translate(glm::identity<glm::mat4>(), camera.eye()),
                               .view_proj = camera.view_proj(),
                               .layer     = RenderLayer::Background});
 
-    queue.enqueue(DrawCommand{.mesh      = &suzanne_gpu_,
+    queue.enqueue(DrawCommand{.mesh      = &suzanne_mesh_.mesh_gpu(),
                               .interface = &mesh_iface_,
                               .world     = suzanne_model_,
                               .view_proj = camera.view_proj(),

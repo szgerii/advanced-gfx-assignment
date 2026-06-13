@@ -2,6 +2,7 @@
 
 #include "core/logger.h"
 #include "gl/buffer.h"
+#include "utils/validate.h"
 
 #include <format>
 
@@ -48,7 +49,7 @@ public:
         glVertexArrayVertexBuffer(id_, binding_idx, vbo.id(), offset, stride);
     }
 
-    void attach(const IndexBuffer& ebo) { glVertexArrayElementBuffer(id_, ebo.id()); }
+    void attach(const IndexBuffer& ibo) { glVertexArrayElementBuffer(id_, ibo.id()); }
 
     void config_attribute(AttribClass attrib_class, GLuint attrib_idx, GLint size, GLenum type,
                           GLuint relative_offset, GLuint binding_idx = 0) {

@@ -427,9 +427,9 @@ MeshCPU<> ObjParser::parse(const std::filesystem::path& fileName) {
                     if (vIndex == 0) // new vertex
                     {
                         Vertex v;
-                        v.pos      = positions[vertex.v_vt_2x32.v];
-                        v.texcoord = texcoords[vertex.v_vt_2x32.vt];
-                        v.normal   = normals[vertex.vn_32.vn];
+                        v.pos    = positions[vertex.v_vt_2x32.v];
+                        v.tex    = texcoords[vertex.v_vt_2x32.vt];
+                        v.normal = normals[vertex.vn_32.vn];
 
                         resultMesh.vertices.push_back(v);
                         resultMesh.indices.push_back(nIndexedVerts++);

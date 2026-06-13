@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "core/logger.h"
+#include "core/mesh.h"
 #include "render/common.h"
 #include "utils/num_cast.h"
 #include "utils/validate.h"
@@ -46,12 +48,14 @@ public:
         glViewport(x, y, width, height);
     }
 
-    static void draw_mesh(const Mesh& mesh) {
+    static void draw_mesh(const MeshGPU& mesh) {
         VALIDATE(mesh);
 
-        if (mesh.index_count != 0)
+        if (mesh.mesh_data_type == MeshDataType::Indexed)
             glDrawElements(GL_TRIANGLES, num_cast<GLsizei>(mesh.index_count), GL_UNSIGNED_INT,
                            nullptr);
+        else if (mesh.mesh_data_type == MeshDataType::Meshlets)
+            Logger::critical_error("OGL", "Meshlet-based meshes are unsupported for now");
         else
             glDrawArrays(GL_TRIANGLES, 0, num_cast<GLsizei>(mesh.vertex_count));
     }

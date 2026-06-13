@@ -27,7 +27,7 @@ void OpaqueRenderPass::run(const RenderQueue& queue) {
 
         current_iface->program().upload_uniform("view_proj", cmd.view_proj);
 
-        cmd.mesh->vao.bind();
+        cmd.mesh->vao->bind();
 
         OGL::draw_mesh(*cmd.mesh);
     }

@@ -1,6 +1,7 @@
 #include "gui/gui_manager.h"
 
 #include "core/application.h"
+#include "core/meta.h"
 #include "utils/enum_range.h"
 
 namespace gui {
@@ -23,7 +24,7 @@ void GuiManager::init() {
     // io.ConfigViewportsNoAutoMerge = true;
     // io.ConfigViewportsNoTaskBarIcon = true;
 
-    io.Fonts->AddFontFromFileTTF("assets\\fonts\\JetBrainsMono-Regular.ttf");
+    io.Fonts->AddFontFromFileTTF(meta::get_font_path("JetBrainsMono-Regular").string().c_str());
 
     ImGui::StyleColorsDark();
 

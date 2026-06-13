@@ -33,7 +33,7 @@ std::string get_ini_path(std::string_view name, bool must_exist = true) {
 namespace gui {
 
 void LayoutManager::try_load_layout(std::string_view name) {
-    meta::ensure_data_paths_exist();
+    meta::ensure_app_paths_exist();
 
     std::string ini_path = get_ini_path(name);
     if (ini_path.empty())
@@ -46,7 +46,7 @@ void LayoutManager::try_load_layout(std::string_view name) {
 }
 
 void LayoutManager::try_save_layout_as(std::string_view name) {
-    meta::ensure_data_paths_exist();
+    meta::ensure_app_paths_exist();
 
     std::string ini_path = get_ini_path(name, false);
     assert(!ini_path.empty());
@@ -58,7 +58,7 @@ void LayoutManager::try_save_layout_as(std::string_view name) {
 }
 
 bool LayoutManager::layout_exists(std::string_view name) {
-    meta::ensure_data_paths_exist();
+    meta::ensure_app_paths_exist();
     return !get_ini_path(name).empty();
 }
 
@@ -76,7 +76,7 @@ LayoutManager::get_layout_names(std::optional<float> current_total_ms, bool forc
 
     if (force_reload || !current_total_ms.has_value() || !last_update_total_ms.has_value() ||
         (*current_total_ms - *last_update_total_ms) >= UPDATE_INTERVAL_MS) {
-        meta::ensure_data_paths_exist();
+        meta::ensure_app_paths_exist();
 
         std::error_code ec;
         auto dir_it = fs::directory_iterator(meta::layouts_dir_path(), ec);

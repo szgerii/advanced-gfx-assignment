@@ -30,7 +30,7 @@ void SkyboxRenderPass::run(const RenderQueue& queue) {
 
         glDepthFunc(GL_LEQUAL);
 
-        cmd.mesh->vao.bind();
+        cmd.mesh->vao->bind();
         OGL::draw_mesh(*cmd.mesh);
 
         glDepthFunc(num_cast<GLenum>(prev_depth_fn));

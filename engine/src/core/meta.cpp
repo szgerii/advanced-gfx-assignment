@@ -65,12 +65,13 @@ std::filesystem::path app_data_path() {
     return *path;
 }
 
-void ensure_data_paths_exist() {
+void ensure_app_paths_exist() {
     std::error_code ec;
 
     // clang-format off
     fs::create_directories(app_data_path(), ec);
     if (!ec) fs::create_directories(layouts_dir_path(), ec);
+    if (!ec) fs::create_directories(assets_dir_path(), ec);
     // clang-format on
 
     if (ec)

@@ -16,6 +16,8 @@
 #include "utils/num_cast.h"
 #include "vendor.h"
 
+// marking client applications as final should resolve most (all?) internal virtual overhead
+// do not use IApplication values anywhere in app code unless necessary, that might ruin it
 class IApplication {
     friend class gui::GuiManager;
     friend class gui::GeneralConfigPanel;

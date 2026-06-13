@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 template <typename... Ts>
 inline constexpr bool dependent_false_v = false;
 
